@@ -1,0 +1,35 @@
+def groupAndSortOwners(files_by_owner):
+    """
+    Groups file names by their owner and sorts the file names alphabetically.
+
+    Args:
+        files_by_owner (dict): A dictionary where keys are file names and values are owner names.
+
+    Returns:
+        dict: A dictionary where keys are owner names and values are lists of file names
+              sorted alphabetically.
+    """
+    grouped_files = {}
+
+    for file_name, owner in files_by_owner.items():
+        if owner not in grouped_files:
+            grouped_files[owner] = []
+        grouped_files[owner].append(file_name)
+
+    # Sort file names for each owner
+    for owner in grouped_files:
+        grouped_files[owner].sort()
+
+    return grouped_files
+
+
+# Example usage
+files_by_owner = {
+    'Input.txt': 'Albert',
+    'Code.py': 'Stanley',
+    'Output.txt': 'Albert',
+    'btech.txt': 'Albert'
+}
+
+result = groupAndSortOwners(files_by_owner)
+print(result)
