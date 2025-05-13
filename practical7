@@ -1,0 +1,29 @@
+def print_pattern(rows):
+    """
+    Prints the specified pattern for the given number of rows.
+
+    Args:
+        rows (int): Number of rows in the pattern.
+    """
+    # Initialize the starting number
+    number = 31
+
+    for i in range(rows):
+        # Print spaces for alignment
+        print("   " * i, end="")
+
+        # Calculate the number of elements in the current row
+        elements_in_row = 2 * (rows - i) - 1
+
+        # Print the numbers in the row
+        for j in range(elements_in_row):
+            print(number, end=" ")
+            number -= 2  # Decrease by 2 for each element
+
+        # Move to the next line
+        print()
+
+
+# Input from the user
+rows = int(input("Enter the number of rows for the pattern: "))
+print_pattern(rows)
