@@ -1,0 +1,69 @@
+
+
+rpc_server.py 
+
+
+
+from xmlrpc.server import SimpleXMLRPCServer
+import os
+
+class FileAccessRPC:
+    def read_file(self, file_path):
+        """Read the contents of a file."""
+        if not os.path.exists(file_path):
+            return f"Error: File {file_path} does not exist."
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except Exception as e:
+            return f"Error reading file: {e}"
+
+    def write_file(self, file_path, content):
+        """Write content to a file."""
+        try:
+            with open(file_path, 'w') as file:
+                file.write(content)
+            return f"File {file_path} written successfully."
+        except Exception as e:
+            return f"Error writing to file: {e}"
+
+
+# Create server
+server = SimpleXMLRPCServer(("localhost", 9000))
+print("RPC Server is running on port 9000...")
+
+# Register the FileAccessRPC methods
+file_access = FileAccessRPC()
+server.register_instance(file_access)
+
+# Run the server
+server.serve_forever()
+
+
+
+
+rpc_client.py
+
+import xmlrpc.client
+
+# Connect to the RPC server
+server_url = "http://localhost:9000"
+client = xmlrpc.client.ServerProxy(server_url)
+
+# Example: Read a file
+file_path = "example.txt"
+print("Reading file...")
+response = client.read_file(file_path)
+print("Response:", response)
+
+# Example: Write to a file
+file_path = "example.txt"
+content = "Hello, this is a test file written via RPC!"
+print("Writing file...")
+response = client.write_file(file_path, content)
+print("Response:", response)
+
+# Re-read the file to verify the written content
+print("Re-reading file...")
+response = client.read_file(file_path)
+print("Response:", response)
