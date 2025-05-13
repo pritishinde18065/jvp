@@ -1,0 +1,118 @@
+1)Problem 1: Calculate the average rating for each product from a dataset of product reviews.
+
+from mrjob.job import MRJob
+from mrjob.step import MRStep
+
+class AverageRating(MRJob):
+
+    def mapper(self, _, line):
+        product, rating = line.split(',')
+        yield product, float(rating)
+
+    def reducer(self, product, ratings):
+        ratings_list = list(ratings)
+        yield product, sum(ratings_list) / len(ratings_list)
+
+if __name__ == '__main__':
+    AverageRating.run()
+
+
+
+Problem 2: Given a social network dataset, find all mutual friends between pairs of users.
+from mrjob.job import MRJob
+from mrjob.step import MRStep
+
+class MutualFriends(MRJob):
+
+    def mapper(self, _, line):
+        user, friends = line.split(':')
+        friends = friends.split(',')
+        for friend in friends:
+            key = tuple(sorted([user, friend]))
+            yield key, set(friends)
+
+    def reducer(self, user_pair, friend_lists):
+        mutual_friends = set.intersection(*friend_lists)
+        yield user_pair, list(mutual_friends)
+
+if __name__ == '__main__':
+    MutualFriends.run()
+
+
+
+Problem 3: Multiply two large matrices using MapReduce.
+
+from mrjob.job import MRJob
+
+class MatrixMultiplication(MRJob):
+
+    def mapper(self, _, line):
+        parts = line.split()
+        matrix, row, col, value = parts[0], int(parts[1]), int(parts[2]), float(parts[3])
+        if matrix == 'a':
+            for k in range(2):  # Assuming the second matrix has 2 columns
+                yield (row, k), (col, value)
+        elif matrix == 'b':
+            for i in range(2):  # Assuming the first matrix has 2 rows
+                yield (i, col), (row, value)
+
+    def reducer(self, key, values):
+        from collections import defaultdict
+        products = defaultdict(float)
+        for v in values:
+            products[v[0]] += v[1]
+        yield key, sum(products.values())
+
+if __name__ == '__main__':
+    MatrixMultiplication.run()
+
+
+
+Problem 4: Find the top N most frequent words in a document.
+
+from mrjob.job import MRJob
+from mrjob.step import MRStep
+
+class TopWords(MRJob):
+
+    def mapper(self, _, line):
+        for word in line.split():
+            yield word, 1
+
+    def reducer(self, word, counts):
+        yield None, (sum(counts), word)
+
+    def reducer_find_top_words(self, _, word_counts):
+        top_n = sorted(word_counts, reverse=True)[:5]  # Top 5 words
+        for count, word in top_n:
+            yield word, count
+
+    def steps(self):
+        return [
+            MRStep(mapper=self.mapper,
+                   reducer=self.reducer),
+            MRStep(reducer=self.reducer_find_top_words)
+        ]
+
+if __name__ == '__main__':
+    TopWords.run()
+
+
+
+
+Problem 5: Create an inverted index that maps words to the documents that contain them.
+
+from mrjob.job import MRJob
+
+class InvertedIndex(MRJob):
+
+    def mapper(self, _, line):
+        doc_id, content = line.split(':', 1)
+        for word in content.split():
+            yield word, doc_id
+
+    def reducer(self, word, doc_ids):
+        yield word, list(set(doc_ids))
+
+if __name__ == '__main__':
+    InvertedIndex.run()
