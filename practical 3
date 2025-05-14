@@ -1,0 +1,97 @@
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
+
+public class ParallelFileSearch {
+
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.out.println("Usage: java ParallelFileSearch <directory_path> <search_text>");
+            return;
+        }
+
+        String directoryPath = args[0];
+        String searchText = args[1];
+
+        try {
+            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            List<Future<FileResult>> futures = new ArrayList<>();
+
+            // Walk through the directory tree and submit tasks for each file
+            Files.walk(Paths.get(directoryPath))
+                 .filter(Files::isRegularFile)
+                 .forEach(path -> {
+                     Future<FileResult> future = executor.submit(() -> 
+                         searchFile(path.toFile(), searchText));
+                     futures.add(future);
+                 });
+
+            // Process results as they complete
+            for (Future<FileResult> future : futures) {
+                try {
+                    FileResult result = future.get();
+                    if (result.count > 0) {
+                        System.out.printf("File: %s - Count: %d%n", 
+                            result.fileName, result.count);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    System.err.println("Error processing file: " + e.getMessage());
+                }
+            }
+
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error accessing directory: " + e.getMessage());
+        }
+    }
+
+    private static FileResult searchFile(File file, String searchText) {
+        int count = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                count += countOccurrences(line, searchText);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + file.getPath());
+        }
+        return new FileResult(file.getPath(), count);
+    }
+
+    private static int countOccurrences(String text, String pattern) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(pattern, index)) != -1) {
+            count++;
+            index += pattern.length();
+        }
+        return count;
+    }
+
+    private static class FileResult {
+        String fileName;
+        int count;
+
+        FileResult(String fileName, int count) {
+            this.fileName = fileName;
+            this.count = count;
+        }
+    }
+}
+
+
+
+
+run:javac ParallelFileSearch.java
+java ParallelFileSearch /home/user/documents "important"
