@@ -26,4 +26,55 @@ def print_pattern(rows):
 
 # Input from the user
 rows = int(input("Enter the number of rows for the pattern: "))
+
+
+
+
+
+
+
+
+
+import java.util.Scanner;
+
+public class PatternGenerator {
+
+    public static void printPattern(int rows) {
+        // Initialize the starting number
+        int number = 31;
+
+        for (int i = 0; i < rows; i++) {
+            // Print spaces for alignment
+            for (int space = 0; space < i; space++) {
+                System.out.print("   "); // 3 spaces for alignment
+            }
+
+            // Calculate the number of elements in the current row
+            int elementsInRow = 2 * (rows - i) - 1;
+
+            // Print the numbers in the current row
+            for (int j = 0; j < elementsInRow; j++) {
+                System.out.print(number + " ");
+                number -= 2; // Decrease by 2 for each element
+            }
+
+            // Move to the next line
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        // Input from the user
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the number of rows for the pattern: ");
+        int rows = scanner.nextInt();
+        
+        // Print the pattern
+        printPattern(rows);
+    }
+}
 print_pattern(rows)
+
+
+javac PatternGenerator.java
+java PatternGenerator
