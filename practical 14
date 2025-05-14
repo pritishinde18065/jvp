@@ -1,0 +1,121 @@
+
+chat_server.py
+
+import socket
+import threading
+
+# Server details
+HOST = '127.0.0.1'
+PORT = 12345
+
+# List to hold connected clients
+clients = []
+usernames = {}
+
+# Function to broadcast messages to all connected clients
+def broadcast(message, sender):
+    for client in clients:
+        if client != sender:
+            try:
+                client.send(message)
+            except:
+                clients.remove(client)
+
+# Function to handle client communication
+def handle_client(client):
+    while True:
+        try:
+            # Receive message from client
+            message = client.recv(1024)
+            if message:
+                print(f"Received: {message.decode('utf-8')}")
+                broadcast(message, client)
+        except:
+            # Remove client if disconnected
+            index = clients.index(client)
+            clients.remove(client)
+            username = usernames[client]
+            print(f"{username} has disconnected.")
+            broadcast(f"{username} has left the chat.".encode('utf-8'), client)
+            del usernames[client]
+            client.close()
+            break
+
+# Function to start the server
+def start_server():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
+    server.listen()
+    print(f"Server started on {HOST}:{PORT}")
+
+    while True:
+        # Accept new connection
+        client, address = server.accept()
+        print(f"Connection established with {address}")
+
+        # Request and store username
+        client.send("Enter your username: ".encode('utf-8'))
+        username = client.recv(1024).decode('utf-8')
+        usernames[client] = username
+        clients.append(client)
+
+        print(f"{username} has joined the chat.")
+        broadcast(f"{username} has joined the chat.".encode('utf-8'), client)
+        client.send("Welcome to the chat!".encode('utf-8'))
+
+        # Start a thread for each client
+        thread = threading.Thread(target=handle_client, args=(client,))
+        thread.start()
+
+if __name__ == "__main__":
+    start_server()
+
+
+
+chat_client.py
+
+    import socket
+import threading
+
+# Server details
+HOST = '127.0.0.1'
+PORT = 12345
+
+# Function to receive messages from the server
+def receive_messages(client):
+    while True:
+        try:
+            message = client.recv(1024).decode('utf-8')
+            print(message)
+        except:
+            print("Disconnected from server.")
+            client.close()
+            break
+
+# Function to send messages to the server
+def send_messages(client):
+    while True:
+        message = input()
+        client.send(message.encode('utf-8'))
+
+def start_client():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((HOST, PORT))
+
+    # Start threads for receiving and sending messages
+    receive_thread = threading.Thread(target=receive_messages, args=(client,))
+    receive_thread.start()
+
+    send_thread = threading.Thread(target=send_messages, args=(client,))
+    send_thread.start()
+
+if __name__ == "__main__":
+    start_client()
+
+
+
+
+
+
+
+    
