@@ -1,0 +1,103 @@
+NotificationService.java
+
+
+
+
+
+ import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+// NotificationVO: Stores notification details (date and message)
+class NotificationVO {
+    private final Date notificationDate;
+    private final String notificationMessage;
+
+    public NotificationVO(Date notificationDate, String notificationMessage) {
+        this.notificationDate = notificationDate;
+        this.notificationMessage = notificationMessage;
+    }
+
+    public Date getNotificationDate() {
+        return notificationDate;
+    }
+
+    public String getNotificationMessage() {
+        return notificationMessage;
+    }
+}
+
+// NotificationDAO: Interface for notification storage operations
+interface NotificationDAO {
+    UUID addNotification(Date time, String message);
+    NotificationVO getNotification(UUID id);
+}
+
+// MapNotificationDAO: Implements NotificationDAO using Map for storage
+class MapNotificationDAO implements NotificationDAO {
+    private final Map<UUID, NotificationVO> notifications = new HashMap<>();
+
+    @Override
+    public UUID addNotification(Date time, String message) {
+        UUID id = UUID.randomUUID();
+        notifications.put(id, new NotificationVO(time, message));
+        return id;
+    }
+
+    @Override
+    public NotificationVO getNotification(UUID id) {
+        return notifications.get(id);
+    }
+}
+
+// NotificationService: Manages notifications using a provided NotificationDAO implementation
+public class NotificationService {
+    private final NotificationDAO notificationDAO;
+
+    public NotificationService(NotificationDAO notificationDAO) {
+        this.notificationDAO = notificationDAO;
+    }
+
+    public UUID raiseNotification(String message) {
+        return this.notificationDAO.addNotification(new Date(), message);
+    }
+
+    public Date getNotificationTime(UUID id) {
+        NotificationVO notification = this.notificationDAO.getNotification(id);
+        return notification != null ? notification.getNotificationDate() : null;
+    }
+
+    public String getNotificationMessage(UUID id) {
+        NotificationVO notification = this.notificationDAO.getNotification(id);
+        return notification != null ? notification.getNotificationMessage() : null;
+    }
+
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Please provide the count of alerts as the first argument.");
+            return;
+        }
+
+        int alertCount;
+        try {
+            alertCount = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid count of alerts.");
+            return;
+        }
+
+        NotificationDAO dao = new MapNotificationDAO();
+        NotificationService service = new NotificationService(dao);
+
+        System.out.println("Enter notification messages:");
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        for (int i = 0; i < alertCount; i++) {
+            String message = scanner.nextLine();
+            UUID id = service.raiseNotification(message);
+            NotificationVO notification = dao.getNotification(id);
+            System.out.println("Notification Added: ID=" + id + ", Date=" + notification.getNotificationDate() + ", Message=" + notification.getNotificationMessage());
+        }
+        scanner.close();
+    }
+}
