@@ -1,0 +1,259 @@
+import sqlite3
+import threading
+import time
+
+
+class DatabaseOperations:
+    """Class to handle database operations."""
+
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.connection = None
+        self.cursor = None
+
+    def connect(self):
+        """Establish a connection to the database."""
+        try:
+            self.connection = sqlite3.connect(self.db_name)
+            self.cursor = self.connection.cursor()
+            print("Database connection established.")
+        except sqlite3.Error as e:
+            print(f"Error connecting to database: {e}")
+
+    def create_table(self):
+        """Create a sample table in the database."""
+        try:
+            self.cursor.execute(
+                '''CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    age INTEGER NOT NULL
+                )'''
+            )
+            self.connection.commit()
+            print("Table created successfully.")
+        except sqlite3.Error as e:
+            print(f"Error creating table: {e}")
+
+    def insert_user(self, name, age):
+        """Insert a user into the table."""
+        try:
+            self.cursor.execute("INSERT INTO users (name, age) VALUES (?, ?)", (name, age))
+            self.connection.commit()
+            print(f"User {name}, aged {age}, inserted successfully.")
+        except sqlite3.Error as e:
+            print(f"Error inserting user: {e}")
+
+    def fetch_users(self):
+        """Fetch all users from the table."""
+        try:
+            self.cursor.execute("SELECT * FROM users")
+            users = self.cursor.fetchall()
+            return users
+        except sqlite3.Error as e:
+            print(f"Error fetching users: {e}")
+            return []
+
+    def close(self):
+        """Close the database connection."""
+        try:
+            if self.connection:
+                self.connection.close()
+                print("Database connection closed.")
+        except sqlite3.Error as e:
+            print(f"Error closing database: {e}")
+
+
+class UserThread(threading.Thread):
+    """Thread class for inserting users into the database."""
+
+    def __init__(self, db_operations, name, age):
+        threading.Thread.__init__(self)
+        self.db_operations = db_operations
+        self.name = name
+        self.age = age
+
+    def run(self):
+        try:
+            print(f"Thread {self.name} starting.")
+            self.db_operations.insert_user(self.name, self.age)
+            time.sleep(1)  # Simulate some delay
+            print(f"Thread {self.name} finished.")
+        except Exception as e:
+            print(f"Error in thread {self.name}: {e}")
+
+
+if __name__ == "__main__":
+    # Database file
+    db_name = "users.db"
+
+    try:
+        # Initialize database operations
+        db_operations = DatabaseOperations(db_name)
+        db_operations.connect()
+        db_operations.create_table()
+
+        # Create and start threads for inserting users
+        threads = []
+        for i in range(5):
+            thread = UserThread(db_operations, f"User{i+1}", 20 + i)
+            threads.append(thread)
+            thread.start()
+
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
+
+        # Fetch and display all users
+        print("\nAll users in the database:")
+        users = db_operations.fetch_users()
+        for user in users:
+            print(f"ID: {user[0]}, Name: {user[1]}, Age: {user[2]}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        # Close the database connection
+        db_operations.close()
+
+
+
+
+
+
+
+
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+// Class for database operations
+class DatabaseOperations {
+    private Connection connection;
+
+    // Connect to the SQLite database
+    public void connect(String dbName) {
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+            System.out.println("Database connection established.");
+        } catch (Exception e) {
+            System.out.println("Error connecting to the database: " + e.getMessage());
+        }
+    }
+
+    // Create a table in the database
+    public void createTable() {
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)";
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(createTableSQL);
+            System.out.println("Table created successfully.");
+        } catch (Exception e) {
+            System.out.println("Error creating table: " + e.getMessage());
+        }
+    }
+
+    // Insert a user into the table
+    public synchronized void insertUser(String name, int age) {
+        String insertSQL = "INSERT INTO users (name, age) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
+            pstmt.setString(1, name);
+            pstmt.setInt(2, age);
+            pstmt.executeUpdate();
+            System.out.println("User " + name + " inserted successfully.");
+        } catch (Exception e) {
+            System.out.println("Error inserting user: " + e.getMessage());
+        }
+    }
+
+    // Fetch all users from the table
+    public void fetchUsers() {
+        String selectSQL = "SELECT * FROM users";
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery(selectSQL);
+            System.out.println("Users in the database:");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Age: " + rs.getInt("age"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching users: " + e.getMessage());
+        }
+    }
+
+    // Close the database connection
+    public void close() {
+        try {
+            if (connection != null) {
+                connection.close();
+                System.out.println("Database connection closed.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error closing database: " + e.getMessage());
+        }
+    }
+}
+
+// Thread class for inserting users into the database
+class UserThread extends Thread {
+    private DatabaseOperations dbOperations;
+    private String name;
+    private int age;
+
+    public UserThread(DatabaseOperations dbOperations, String name, int age) {
+        this.dbOperations = dbOperations;
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("Thread for " + name + " started.");
+            dbOperations.insertUser(name, age);
+            Thread.sleep(1000); // Simulate delay
+            System.out.println("Thread for " + name + " finished.");
+        } catch (Exception e) {
+            System.out.println("Error in thread for " + name + ": " + e.getMessage());
+        }
+    }
+}
+
+// Main class
+public class ExceptionMultithreadingDatabase {
+    public static void main(String[] args) {
+        String dbName = "users.db";
+
+        // Initialize database operations
+        DatabaseOperations dbOperations = new DatabaseOperations();
+        dbOperations.connect(dbName);
+        dbOperations.createTable();
+
+        // Create and start threads
+        Thread[] threads = new Thread[5];
+        for (int i = 0; i < 5; i++) {
+            threads[i] = new UserThread(dbOperations, "User" + (i + 1), 20 + i);
+            threads[i].start();
+        }
+
+        // Wait for all threads to complete
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Error waiting for thread: " + e.getMessage());
+            }
+        }
+
+        // Fetch and display all users
+        dbOperations.fetchUsers();
+
+        // Close the database connection
+        dbOperations.close();
+    }
+}
+
+
+run:javac ExceptionMultithreadingDatabase.java
+java ExceptionMultithreadingDatabase
