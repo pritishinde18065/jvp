@@ -1,98 +1,113 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LambdaOptionalStreamsDemo {
-
+public class LambdaStreamOptionalDemo {
     public static void main(String[] args) {
-        // Example list of integers
-        List<Integer> numbers = Arrays.asList(10, 15, 20, 25, 30, 35, 40);
+        // Sample list of integers
+        List<Integer> numbers = List.of(10, 15, 20, 25, 30, 35, 40);
 
-        System.out.println("Original List: " + numbers);
+        // Demonstrating Lambda Expressions with a simple print
+        System.out.println("Original Numbers:");
+        numbers.forEach(num -> System.out.println(num));
 
-        // 1. Filter: Get only even numbers using Streams and Lambda
+        // Filter: Keep only even numbers
         List<Integer> evenNumbers = numbers.stream()
-                .filter(n -> n % 2 == 0) // Lambda expression for filtering even numbers
+                .filter(num -> num % 2 == 0) // Lambda expression for filter
                 .collect(Collectors.toList());
-        System.out.println("Even Numbers: " + evenNumbers);
 
-        // 2. Map: Multiply each number by 2 using Streams and Lambda
-        List<Integer> doubledNumbers = numbers.stream()
-                .map(n -> n * 2) // Lambda expression for mapping
+        System.out.println("\nEven Numbers:");
+        evenNumbers.forEach(System.out::println);
+
+        // Map: Square each number
+        List<Integer> squaredNumbers = numbers.stream()
+                .map(num -> num * num) // Lambda expression for map
                 .collect(Collectors.toList());
-        System.out.println("Doubled Numbers: " + doubledNumbers);
 
-        // 3. Reduce: Find the sum of all numbers using Streams and Lambda
+        System.out.println("\nSquared Numbers:");
+        squaredNumbers.forEach(System.out::println);
+
+        // Reduce: Sum of all numbers
         int sum = numbers.stream()
-                .reduce(0, (a, b) -> a + b); // Lambda expression for reducing (adding numbers)
-        System.out.println("Sum of Numbers: " + sum);
+                .reduce(0, (a, b) -> a + b); // Lambda expression for reduce
 
-        // Optional Example: Check and retrieve a number greater than 25
-        Optional<Integer> optionalNumber = numbers.stream()
-                .filter(n -> n > 25) // Filter for numbers greater than 25
-                .findFirst(); // Get the first number that matches the condition
+        System.out.println("\nSum of All Numbers:");
+        System.out.println(sum);
 
-        // Print optional value if present
-        optionalNumber.ifPresentOrElse(
-                n -> System.out.println("First Number Greater Than 25: " + n),
-                () -> System.out.println("No Number Greater Than 25 Found")
+        // Optional: Find the first number greater than 25
+        Optional<Integer> firstGreaterThan25 = numbers.stream()
+                .filter(num -> num > 25) // Lambda expression for filter
+                .findFirst();
+
+        System.out.println("\nFirst Number Greater Than 25:");
+        firstGreaterThan25.ifPresentOrElse(
+                System.out::println,
+                () -> System.out.println("No number found greater than 25")
         );
 
-        // Combining operations: Filter, Map, and Reduce
-        int combinedResult = numbers.stream()
-                .filter(n -> n % 2 != 0) // Keep only odd numbers
-                .map(n -> n * 3) // Multiply each by 3
-                .reduce(0, Integer::sum); // Sum them up
-        System.out.println("Sum of Odd Numbers Multiplied by 3: " + combinedResult);
+        // Combining operations: Filter, Map, and Collect
+        List<String> result = numbers.stream()
+                .filter(num -> num % 2 != 0) // Keep odd numbers
+                .map(num -> "Odd Number: " + num) // Map to a string
+                .collect(Collectors.toList());
+
+        System.out.println("\nOdd Numbers as Strings:");
+        result.forEach(System.out::println);
     }
 }
 
 
 
-
-run:javac LambdaOptionalStreamsDemo.java
-java LambdaOptionalStreamsDemo
-
+run javac LambdaStreamOptionalDemo.java
+java LambdaStreamOptionalDemo
 
 
 
 
 
-from typing import Optional
+
+
 from functools import reduce
 
-# Example list of integers
-numbers = [10, 15, 20, 25, 30, 35, 40]
+def main():
+    # Sample list of integers
+    numbers = [10, 15, 20, 25, 30, 35, 40]
 
-print("Original List:", numbers)
+    # Lambda Expressions: Print each number
+    print("Original Numbers:")
+    list(map(lambda num: print(num), numbers))
 
-# 1. Filter: Get only even numbers using Lambda
-even_numbers = list(filter(lambda n: n % 2 == 0, numbers))
-print("Even Numbers:", even_numbers)
+    # Filter: Keep only even numbers
+    even_numbers = list(filter(lambda num: num % 2 == 0, numbers))
+    print("\nEven Numbers:")
+    print(even_numbers)
 
-# 2. Map: Multiply each number by 2 using Lambda
-doubled_numbers = list(map(lambda n: n * 2, numbers))
-print("Doubled Numbers:", doubled_numbers)
+    # Map: Square each number
+    squared_numbers = list(map(lambda num: num ** 2, numbers))
+    print("\nSquared Numbers:")
+    print(squared_numbers)
 
-# 3. Reduce: Find the sum of all numbers using Lambda
-sum_of_numbers = reduce(lambda a, b: a + b, numbers)
-print("Sum of Numbers:", sum_of_numbers)
+    # Reduce: Sum of all numbers
+    total_sum = reduce(lambda a, b: a + b, numbers)
+    print("\nSum of All Numbers:")
+    print(total_sum)
 
-# Optional-like example: Check and retrieve a number greater than 25
-optional_number: Optional[int] = next((n for n in numbers if n > 25), None)
+    # Optional-like: Find the first number greater than 25
+    first_greater_than_25 = next((num for num in numbers if num > 25), None)
+    print("\nFirst Number Greater Than 25:")
+    if first_greater_than_25 is not None:
+        print(first_greater_than_25)
+    else:
+        print("No number found greater than 25")
 
-if optional_number is not None:
-    print("First Number Greater Than 25:", optional_number)
-else:
-    print("No Number Greater Than 25 Found")
-
-# Combining operations: Filter, Map, and Reduce
-combined_result = reduce(
-    lambda a, b: a + b,
-    map(lambda n: n * 3, filter(lambda n: n % 2 != 0, numbers)),
-    0
-)
-print("Sum of Odd Numbers Multiplied by 3:", combined_result)
-
+    # Combining operations: Filter, Map
+    odd_number_strings = list(
+        map(lambda num: f"Odd Number: {num}", filter(lambda num: num % 2 != 0, numbers))
+    )
+    print("\nOdd Numbers as Strings:")
+    print(odd_number_strings)
 
 
-run:python lambda_optional_streams_demo.py
+if __name__ == "__main__":
+    main()
