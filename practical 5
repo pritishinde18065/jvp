@@ -1,0 +1,93 @@
+from datetime import date, datetime
+
+def difference_in_days(date1: str, date2: str) -> int:
+    """
+    Calculate the difference in days between two dates.
+    
+    Parameters:
+        date1 (str): The first date in YYYY-MM-DD format.
+        date2 (str): The second date in YYYY-MM-DD format.
+    
+    Returns:
+        int: The difference in days between the two dates.
+    """
+    # Convert strings to date objects
+    d1 = datetime.strptime(date1, "%Y-%m-%d").date()
+    d2 = datetime.strptime(date2, "%Y-%m-%d").date()
+    
+    # Calculate the difference in days
+    delta = abs((d2 - d1).days)
+    return delta
+
+
+# Demonstrating LocalDate (date) vs LocalDateTime (datetime)
+def demonstrate_local_date_vs_local_datetime():
+    # LocalDate equivalent: Only the date part
+    local_date = date.today()
+    print("LocalDate (Only Date):", local_date)
+
+    # LocalDateTime equivalent: Both date and time parts
+    local_date_time = datetime.now()
+    print("LocalDateTime (Date and Time):", local_date_time)
+
+
+# Main function
+if __name__ == "__main__":
+    # Demonstrate LocalDate vs LocalDateTime
+    demonstrate_local_date_vs_local_datetime()
+
+    # Example usage of the difference_in_days function
+    date1 = "2025-05-01"
+    date2 = "2025-05-14"
+    diff = difference_in_days(date1, date2)
+    print(f"Difference in days between {date1} and {date2}: {diff} days")
+
+
+
+run:python local_date_vs_local_datetime.py
+
+
+
+
+
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+public class LocalDateVsLocalDateTime {
+
+    // Function to calculate the difference in days between two dates
+    public static long differenceInDays(String date1, String date2) {
+        // Parse the input strings into LocalDate objects
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate d1 = LocalDate.parse(date1, formatter);
+        LocalDate d2 = LocalDate.parse(date2, formatter);
+
+        // Calculate the difference in days
+        return ChronoUnit.DAYS.between(d1, d2);
+    }
+
+    public static void main(String[] args) {
+        // Demonstrating the use of LocalDate (only date)
+        LocalDate localDate = LocalDate.now();
+        System.out.println("LocalDate (Only Date): " + localDate);
+
+        // Demonstrating the use of LocalDateTime (date and time)
+        LocalDateTime localDateTime = LocalDateTime.now();
+        System.out.println("LocalDateTime (Date and Time): " + localDateTime);
+
+        // Example usage of the differenceInDays function
+        String date1 = "2025-05-01";
+        String date2 = "2025-05-14";
+        long diff = differenceInDays(date1, date2);
+        System.out.println("Difference in days between " + date1 + " and " + date2 + ": " + diff + " days");
+    }
+}
+
+
+
+
+javac LocalDateVsLocalDateTime.java
+java LocalDateVsLocalDateTime
