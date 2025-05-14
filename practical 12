@@ -1,0 +1,280 @@
+FileTransferServer.java
+
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class FileTransferServer {
+    private static final int PORT = 12345;
+    private static final String FILE_DIRECTORY = "server_files"; // Directory containing files to serve
+    private static final int THREAD_POOL_SIZE = 5; // Number of concurrent threads
+
+    public static void main(String[] args) {
+        // Create a thread pool for handling client connections
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            System.out.println("File Transfer Server started on port " + PORT);
+
+            // Ensure the file directory exists
+            File directory = new File(FILE_DIRECTORY);
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+
+            // Continuously listen for client connections
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected: " + clientSocket.getInetAddress());
+
+                // Handle client request in a separate thread
+                executorService.execute(new ClientHandler(clientSocket));
+            }
+        } catch (IOException e) {
+            System.err.println("Server error: " + e.getMessage());
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+    // Inner class to handle client requests
+    static class ClientHandler implements Runnable {
+        private Socket clientSocket;
+
+        public ClientHandler(Socket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
+
+        @Override
+        public void run() {
+            try (DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+                 DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream())) {
+
+                dos.writeUTF("Welcome to the File Transfer Server!");
+                dos.writeUTF("Enter the name of the file you want to download:");
+
+                // Read the requested file name from the client
+                String fileName = dis.readUTF();
+                File file = new File(FILE_DIRECTORY + File.separator + fileName);
+
+                if (file.exists() && !file.isDirectory()) {
+                    dos.writeUTF("File found. Starting download...");
+
+                    // Send the file to the client
+                    try (FileInputStream fis = new FileInputStream(file)) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+
+                        while ((bytesRead = fis.read(buffer)) != -1) {
+                            dos.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    dos.writeUTF("File transfer complete.");
+                } else {
+                    dos.writeUTF("File not found on the server.");
+                }
+            } catch (IOException e) {
+                System.err.println("Error handling client: " + e.getMessage());
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    System.err.println("Error closing client socket: " + e.getMessage());
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+FileTransferClient.java
+
+
+import java.io.*;
+import java.net.Socket;
+import java.util.Scanner;
+
+public class FileTransferClient {
+    private static final String SERVER_ADDRESS = "localhost";
+    private static final int SERVER_PORT = 12345;
+    private static final String DOWNLOAD_DIRECTORY = "client_files"; // Directory to save downloaded files
+
+    public static void main(String[] args) {
+        // Ensure the download directory exists
+        File directory = new File(DOWNLOAD_DIRECTORY);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+             DataInputStream dis = new DataInputStream(socket.getInputStream());
+             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+             Scanner scanner = new Scanner(System.in)) {
+
+            System.out.println(dis.readUTF()); // Welcome message from server
+            System.out.println(dis.readUTF()); // File request prompt
+
+            // Enter the file name to request
+            System.out.print("Enter the file name to download: ");
+            String fileName = scanner.nextLine();
+            dos.writeUTF(fileName);
+
+            // Response from server
+            String serverResponse = dis.readUTF();
+            System.out.println(serverResponse);
+
+            if (serverResponse.startsWith("File found")) {
+                // Save the file
+                try (FileOutputStream fos = new FileOutputStream(DOWNLOAD_DIRECTORY + File.separator + fileName)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+
+                    while ((bytesRead = dis.read(buffer)) != -1) {
+                        fos.write(buffer, 0, bytesRead);
+
+                        // Break when the server sends "File transfer complete."
+                        if (dis.available() > 0 && dis.readUTF().equals("File transfer complete.")) {
+                            break;
+                        }
+                    }
+                }
+
+                System.out.println("File downloaded successfully.");
+            } else {
+                System.out.println("File not available on the server.");
+            }
+        } catch (IOException e) {
+            System.err.println("Client error: " + e.getMessage());
+        }
+    }
+}
+
+
+
+
+
+run: javac FileTransferServer.java FileTransferClient.java
+java FileTransferServer
+java FileTransferClient
+
+
+
+
+python code
+
+
+ server.py
+import socket
+import threading
+import os
+
+# Server configuration
+SERVER_HOST = "0.0.0.0"
+SERVER_PORT = 5001
+BUFFER_SIZE = 1024
+
+def handle_client(client_socket, client_address):
+    print(f"[+] New connection from {client_address}")
+
+    # Receive the requested filename from the client
+    filename = client_socket.recv(BUFFER_SIZE).decode()
+    print(f"[+] Client requested file: {filename}")
+
+    if os.path.isfile(filename):
+        # Send file size to the client
+        file_size = os.path.getsize(filename)
+        client_socket.send(f"{file_size}".encode())
+
+        # Open and send the file in chunks
+        with open(filename, "rb") as f:
+            while (chunk := f.read(BUFFER_SIZE)):
+                client_socket.sendall(chunk)
+
+        print(f"[+] File '{filename}' sent to {client_address}")
+    else:
+        # If the file doesn't exist, notify the client
+        client_socket.send("ERROR: File not found.".encode())
+        print(f"[-] File '{filename}' not found. Notified {client_address}")
+
+    # Close the client socket
+    client_socket.close()
+
+def start_server():
+    # Create a socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((SERVER_HOST, SERVER_PORT))
+    server_socket.listen(5)
+    print(f"[*] Listening on {SERVER_HOST}:{SERVER_PORT}")
+
+    while True:
+        # Accept a new client
+        client_socket, client_address = server_socket.accept()
+        print(f"[+] Accepted connection from {client_address}")
+
+        # Handle the client in a new thread
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread.start()
+
+if __name__ == "__main__":
+    start_server()
+
+
+
+
+
+
+    client.py'
+
+    import socket
+import os
+
+# Server configuration
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 5001
+BUFFER_SIZE = 1024
+
+def download_file(filename):
+    # Create a socket
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((SERVER_HOST, SERVER_PORT))
+
+    # Send the filename to the server
+    client_socket.send(filename.encode())
+
+    # Receive the file size or error message
+    response = client_socket.recv(BUFFER_SIZE).decode()
+
+    if response.startswith("ERROR"):
+        print(response)
+    else:
+        # Receive and write the file
+        file_size = int(response)
+        print(f"[+] Downloading '{filename}' ({file_size} bytes)")
+
+        with open(f"downloaded_{filename}", "wb") as f:
+            received_size = 0
+            while received_size < file_size:
+                chunk = client_socket.recv(BUFFER_SIZE)
+                if not chunk:
+                    break
+                f.write(chunk)
+                received_size += len(chunk)
+                print(f"[*] Received {received_size}/{file_size} bytes", end="\r")
+
+        print(f"\n[+] File '{filename}' downloaded successfully")
+
+    # Close the connection
+    client_socket.close()
+
+if __name__ == "__main__":
+    filename = input("Enter the filename to download: ")
+    download_file(filename)
+
+
+    run:python server.py
+    python client.py
