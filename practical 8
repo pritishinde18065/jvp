@@ -20,6 +20,72 @@ class QuadraticEquationSolver:
         # Calculate the discriminant: b^2 - 4ac
         discriminant = b ** 2 - 4 * a * c
         
+        if discriminant > 0:
+            # Two distinct real roots
+            root1 = (-b + math.sqrt(discriminant)) / (2 * a)
+            root2 = (-b - math.sqrt(discriminant)) / (2 * a)
+        elif discriminant == 0:
+            # One repeated real root
+            root1 = root2 = -b / (2 * a)
+        else:
+            # Complex roots
+            real_part = -b / (2 * a)
+            imaginary_part = math.sqrt(-discriminant) / (2 * a)
+            root1 = complex(real_part, imaginary_part)
+            root2 = complex(real_part, -imaginary_part)
+        
+        return root1, root2
+
+
+if __name__ == "__main__":
+    print("Solve Quadratic Equation of the form ax^2 + bx + c = 0")
+    
+    # Taking input from the user
+    try:
+        a = float(input("Enter the coefficient a: "))
+        b = float(input("Enter the coefficient b: "))
+        c = float(input("Enter the constant c: "))
+        
+        # Solve the quadratic equation
+        solver = QuadraticEquationSolver()
+        roots = solver.findRoots(a, b, c)
+        print(f"The roots of the equation {a}x^2 + ({b})x + ({c}) = 0 are: {roots[0]} and {roots[1]}")
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
+
+
+
+
+
+
+
+
+import math
+
+class QuadraticEquationSolver:
+    @staticmethod
+    def findRoots(a: float, b: float, c: float):
+        """
+        Finds the roots of a quadratic equation of the form ax^2 + bx + c = 0.
+        
+        Parameters:
+            a (float): Coefficient of x^2
+            b (float): Coefficient of x
+            c (float): Constant term
+        
+        Returns:
+            tuple: A tuple containing two roots (root1, root2). If the roots are complex, they will be returned as complex numbers.
+        """
+        if a == 0:
+            raise ValueError("Coefficient 'a' cannot be zero for a quadratic equation.")
+        
+        # Calculate the discriminant: b^2 - 4ac
+        discriminant = b ** 2 - 4 * a * c
+        
         if discriminant >= 0:
             # Real roots
             root1 = (-b + math.sqrt(discriminant)) / (2 * a)
