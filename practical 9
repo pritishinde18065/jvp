@@ -1,0 +1,297 @@
+class Animal:
+    """Base class to represent generic animals."""
+    def __init__(self, name):
+        self.name = name
+
+    def sound(self):
+        """Method to be overridden by subclasses."""
+        return "Some generic animal sound"
+
+    def info(self):
+        """Demonstrates method overloading using default arguments."""
+        return f"Name: {self.name}"
+
+
+class Dog(Animal):
+    """Derived class to represent a Dog, inheriting from Animal."""
+    def __init__(self, name, breed):
+        super().__init__(name)  # Call the parent class initializer
+        self.breed = breed
+
+    # Overriding the 'sound' method
+    def sound(self):
+        return "Woof Woof"
+
+    # Overloading 'info' method by adding a second argument
+    def info(self, detailed=False):
+        if detailed:
+            return f"Name: {self.name}, Breed: {self.breed}"
+        return super().info()
+
+
+class Cat(Animal):
+    """Derived class to represent a Cat, inheriting from Animal."""
+    def __init__(self, name, color):
+        super().__init__(name)  # Call the parent class initializer
+        self.color = color
+
+    # Overriding the 'sound' method
+    def sound(self):
+        return "Meow"
+
+    # Overloading 'info' method by adding a second argument
+    def info(self, detailed=False):
+        if detailed:
+            return f"Name: {self.name}, Color: {self.color}"
+        return super().info()
+
+
+# Main program to demonstrate the features
+if __name__ == "__main__":
+    # Base class object
+    generic_animal = Animal("GenericAnimal")
+    print("Animal Sound:", generic_animal.sound())
+    print("Animal Info:", generic_animal.info())
+
+    # Derived class object (Dog)
+    dog = Dog("Buddy", "Golden Retriever")
+    print("\nDog Sound:", dog.sound())  # Overriding
+    print("Dog Info (Simple):", dog.info())  # Overloading
+    print("Dog Info (Detailed):", dog.info(detailed=True))  # Overloading
+
+    # Derived class object (Cat)
+    cat = Cat("Whiskers", "White")
+    print("\nCat Sound:", cat.sound())  # Overriding
+    print("Cat Info (Simple):", cat.info())  # Overloading
+
+
+
+
+
+
+
+
+
+
+
+
+    class Animal:
+    def __init__(self, name, species):
+        self.name = name
+        self.species = species
+    
+    def make_sound(self, sound="Some generic animal sound"):
+        print(f"{self.name} says {sound}")
+    
+    def move(self):
+        print(f"{self.name} is moving")
+    
+    def __str__(self):
+        return f"{self.name} ({self.species})"
+
+# Inheritance example
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name, species="Canine")
+        self.breed = breed
+    
+    # Method overriding
+    def make_sound(self):
+        print(f"{self.name} barks: Woof!")
+    
+    # Method overloading (simulated with default parameters)
+    def fetch(self, item="stick", times=1):
+        print(f"{self.name} fetched the {item} {times} time(s)!")
+
+# Another inherited class
+class Cat(Animal):
+    def __init__(self, name, color):
+        super().__init__(name, species="Feline")
+        self.color = color
+    
+    # Method overriding
+    def make_sound(self):
+        print(f"{self.name} meows: Meow!")
+    
+    def climb(self, height=1.0):
+        print(f"{self.name} climbed {height} meters up the tree")
+
+# Specialized class inheriting from Dog
+class ServiceDog(Dog):
+    def __init__(self, name, breed, service_type):
+        super().__init__(name, breed)
+        self.service_type = service_type
+    
+    # Additional method
+    def perform_service(self):
+        print(f"{self.name} is performing {self.service_type} service")
+    
+    # Overriding parent's method
+    def make_sound(self, sound=None):
+        if sound:
+            super().make_sound(sound)
+        else:
+            print(f"{self.name} barks professionally")
+
+def main():
+    # Create instances
+    generic_animal = Animal("Generic", "Unknown")
+    dog = Dog("Buddy", "Golden Retriever")
+    cat = Cat("Whiskers", "Tabby")
+    service_dog = ServiceDog("Hero", "Labrador", "guide")
+
+    # Demonstrate methods
+    print("\n--- Animal Class ---")
+    print(generic_animal)
+    generic_animal.make_sound()
+    generic_animal.move()
+
+    print("\n--- Dog Class ---")
+    print(dog)
+    dog.make_sound()  # Overridden method
+    dog.fetch()  # Default parameters
+    dog.fetch("ball", 3)  # Different arguments
+
+    print("\n--- Cat Class ---")
+    print(cat)
+    cat.make_sound()  # Overridden method
+    cat.climb()
+    cat.climb(2.5)  # Different argument
+
+    print("\n--- ServiceDog Class ---")
+    print(service_dog)
+    service_dog.make_sound()  # Overridden differently
+    service_dog.make_sound("Quiet woof")  # Using parent's version
+    service_dog.perform_service()  # Specialized method
+    service_dog.fetch("harness")  # Inherited from Dog
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+// Base class
+class Shape {
+    // Attribute
+    String name;
+
+    // Constructor
+    public Shape(String name) {
+        this.name = name;
+    }
+
+    // Method to calculate area (to be overridden)
+    public double area() {
+        System.out.println("Area calculation is not defined for shape.");
+        return 0;
+    }
+
+    // Method to describe the shape (demonstrates overloading)
+    public String description() {
+        return "Shape: " + name;
+    }
+
+    public String description(boolean detailed) {
+        if (detailed) {
+            return "Detailed description is not available for this shape.";
+        }
+        return description();
+    }
+}
+
+// Derived class: Rectangle
+class Rectangle extends Shape {
+    // Attributes specific to Rectangle
+    double length;
+    double width;
+
+    // Constructor
+    public Rectangle(String name, double length, double width) {
+        super(name); // Call the base class constructor
+        this.length = length;
+        this.width = width;
+    }
+
+    // Override the area method
+    @Override
+    public double area() {
+        return length * width;
+    }
+
+    // Overload the description method
+    @Override
+    public String description(boolean detailed) {
+        if (detailed) {
+            return "Shape: " + name + ", Length: " + length + ", Width: " + width + ", Area: " + area();
+        }
+        return super.description();
+    }
+}
+
+// Derived class: Circle
+class Circle extends Shape {
+    // Attribute specific to Circle
+    double radius;
+
+    // Constructor
+    public Circle(String name, double radius) {
+        super(name); // Call the base class constructor
+        this.radius = radius;
+    }
+
+    // Override the area method
+    @Override
+    public double area() {
+        return Math.PI * radius * radius;
+    }
+
+    // Overload the description method
+    @Override
+    public String description(boolean detailed) {
+        if (detailed) {
+            return "Shape: " + name + ", Radius: " + radius + ", Area: " + area();
+        }
+        return super.description();
+    }
+}
+
+// Main class to demonstrate Inheritance, Overloading, and Overriding
+public class InheritanceOverloadingOverriding {
+    public static void main(String[] args) {
+        // Base class object
+        Shape genericShape = new Shape("Generic Shape");
+        System.out.println(genericShape.description());
+        System.out.println("Area: " + genericShape.area());
+
+        // Derived class object: Rectangle
+        Rectangle rectangle = new Rectangle("Rectangle", 10, 5);
+        System.out.println("\n" + rectangle.description());
+        System.out.println(rectangle.description(true));
+        System.out.println("Area: " + rectangle.area());
+
+        // Derived class object: Circle
+        Circle circle = new Circle("Circle", 7);
+        System.out.println("\n" + circle.description());
+        System.out.println(circle.description(true));
+        System.out.println("Area: " + circle.area());
+    }
+}
+
+
+
+
+
+
+
+javac InheritanceOverloadingOverriding.java
+java InheritanceOverloadingOverriding
+
+
+
+
+
+
+
+    
+    print("Cat Info (Detailed):", cat.info(detailed=True))  # Overloading
